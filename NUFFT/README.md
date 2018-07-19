@@ -67,7 +67,7 @@ The script will execute the NFFT on provided datas and will store result (k-spac
 #### Interpreting results
 After generating files for each transform you want to compare, just call `test_NFFT.py` with the list of .npy files in argument. It will then plot the MSE and SSIM between computed k-space, and also plot processing times for each transform. The resulting figures are stored in folder results/ as .png image (folder results/ must be created when git project is cloned).
 
-#### Scripted comparisons
+#### Scripted comparisons (in scripts/)
 The pipeline for some comparisons have been scripted in .sh files, such as:
 * `compare_basic.sh`: Compute PyNufft and PyNFFT CPU transforms, adjoints with standard parameters (2D) and compare the results
 * `compare_interp_pynufft.sh`: compare results of Pynufft transform aside different sizes of the interpolator kernel.
@@ -78,8 +78,8 @@ The pipeline for some comparisons have been scripted in .sh files, such as:
 Thoses scripts can be also seen as examples on how calling the Python scripts.
 
 ## III - Results and limitations
-#### 2D transforms
-With CPU functions, 2D transforms works well (SSIM is near 1 under a 1e-7 tolerance, which means the two modules computes near-identical transforms). However, PyNufft is significantly slower than PyNFFT, which isn't surprising for the CPU version, as it is mostly Python code versus a C kernel for PyNFFT.
+#### CPU Pynufft
+Works well, huge error on Pynufft side (10^-8 instead of 10^-20) but way quicker if you take into account the one-time preprocessing vs. multiple calls to processing operators.
 ![enter image description here](https://lh3.googleusercontent.com/CKnMrb93wIF-lMEYMQuSQmMnGqyzXxwOoYGijpnD5reVtnYMWZbn0xmngMaFNXpHLD2YtdMJ92BO "Performance comparison between CPU Nufft and NFFT on &#40;256,256&#41; image")
 #### GPU Pynufft
 GPU Pynufft, with a more complex syntax to call functions, is also performing not only poorly to PyNFFT but also CPU Pynufft.
@@ -90,8 +90,9 @@ A closer look to the code highlights that it is the `plan()` function, computing
 
 #### 3D transforms
 
-Another problem has been shown for transformations over 3D volumes. While it works well on the example furnished in the module, and on small volumes, the computation crashes if the volume size exceeds a specific limit ( $64^3$ seems to work, but $128^3$ crashes violently upon plan() computation; idem for GPU Pynufft)
+Main issue has been reported on 3D GPU:
+- You can't instanciate two instances of GPU NUFFT (NUFFT_hsa() object) without tempering with the CUDA memory
 
-
-## Conclusion
-Contact author for debug help, especially over GPU calls
+Smaller issues:
+- API of GPU is not user-friendly
+- Error of NUFFT vs. NFFT is huge (see unittest)
