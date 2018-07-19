@@ -13,17 +13,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
-# In[2]:
-# _mask = np.ones(np.random.randint(2, size=(64, 64, 64)).shape)
-# _samples = convert_mask_to_locations_3D(_mask)
-# _samples_shift = convert_mask_to_locations_3D(np.fft.fftshift(_mask))
-# image = np.load('/volatile/bsarthou/datas/NUFFT/mri_img_2D.npy')
-# image = image[64:128, 64:128]
-# images = np.tile(image, (64, 1, 1))
-
+# Sampling pattern (here, random)
 _mask = np.ones(np.random.randint(2, size=(512, 512)).shape)
 _samples = convert_mask_to_locations(_mask)
 _samples_shift = convert_mask_to_locations(np.fft.fftshift(_mask))
+
+# Load images
 images = np.load('/volatile/bsarthou/datas/NUFFT/mri_img_2D.npy')
 print(images.shape)
 # In[3]:
@@ -33,14 +28,8 @@ fourier_op_dir_nufft = NUFFT(samples=_samples, platform='cpu',
                              shape=(512, 512), Kd=512, Jd=3)
 fourier_op_dir_nfft = NFFT2(samples=_samples, shape=(512, 512))
 
-
-# In[4]:
-
-
 fourier_op_dir_fft = FFT2(samples=_samples_shift, shape=(512, 512))
 
-
-# In[20]:
 kspace_nfft = fourier_op_dir_nfft.op(images)
 kspace_nufft = fourier_op_dir_nufft.op(images)
 kspace_fft = np.fft.ifftshift(fourier_op_dir_fft.op(np.fft.fftshift(images)))
